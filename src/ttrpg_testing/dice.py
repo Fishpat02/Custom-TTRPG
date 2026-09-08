@@ -84,7 +84,7 @@ class DiceRoller:
             num_dice -= 1 if num_dice > 1 else 0
 
         for _ in range(num_dice):
-            roll: int = randint(1, 10)
+            roll: int = randint(1, BASE_DICE_SIDES)
             if roll <= BANE_THRESHOLD:
                 rolls.append(Die(roll, DieType.BANE))
             elif roll <= BOON_THRESHOLD:
