@@ -1,33 +1,34 @@
-from functools import reduce
-from operator import countOf
+from dataclasses import dataclass
 
-from .dice import DiceRoller, DieType
+from .dice import DieAdvantage, sum_prob
+
+
+@dataclass
+class Trial:
+    dc: int
+    proficient: bool
+    advantage: DieAdvantage
 
 
 def main() -> None:
-    REP_COUNT = 100
-    DICE_PER_REP = 2
-    ROLL_ADV = 1
-    ROLL_DIS = 0
+    num_trials: int = 20
 
-    low_rolls = mid_rolls = high_rolls = 0
-    total_rolls = REP_COUNT * (DICE_PER_REP + ROLL_ADV - ROLL_DIS)
+    for i, v in enumerate(range(1, num_trials, 4)):
+        level = v
+        num_dice = 1 + i
 
-    for _ in range(REP_COUNT):
-        roll = DiceRoller.roll_dice(
-            DICE_PER_REP, advantage=bool(ROLL_ADV), disadvantage=bool(ROLL_DIS)
+        trial = Trial(15, True, DieAdvantage.NEUTRAL)
+
+        if trial.proficient:
+            num_dice += 1
+
+        if trial.advantage & DieAdvantage.ADVANTAGE:
+            num_dice += 1
+        elif trial.advantage & DieAdvantage.DISADVANTAGE:
+            num_dice -= 1 if num_dice > 1 else 0
+
+        probability = sum_prob(15, num_dice)
+
+        print(
+            f"Probability to pass DC 15 at level {level} rolling {num_dice} dice: {probability:.2%}"
         )
-        a, b = zip(*roll)
-        diceValues: list[int] = list(a)
-        diceTypes: list[DieType] = list(b)
-
-        _value = reduce(lambda a, b: a + b, diceValues)
-
-        low_rolls += countOf(diceTypes, DieType.BANE)
-        mid_rolls += countOf(diceTypes, DieType.NEUTRAL)
-        high_rolls += countOf(diceTypes, DieType.BOON)
-
-    print()
-    print(f"Low rolls %: {round((low_rolls / total_rolls) * 100, 1)}%")
-    print(f"Mid rolls %: {round((mid_rolls / total_rolls) * 100, 1)}%")
-    print(f"High rolls %: {round((high_rolls / total_rolls) * 100, 1)}%")
