@@ -9,6 +9,33 @@ BOON_THRESHOLD: int = 7
 BASE_DICE_SIDES = 10
 
 
+class DieType(Flag):
+    BANE = auto()
+    NEUTRAL = auto()
+    BOON = auto()
+
+
+class DieAdvantage(Flag):
+    DISADVANTAGE = auto()
+    NEUTRAL = auto()
+    ADVANTAGE = auto()
+
+
+@dataclass
+class Die:
+    value: int
+    die_type: DieType
+
+
+@dataclass
+class Roll:
+    dice: list[Die]
+    value: int = field(init=False)
+
+    def __post_init__(self):
+        self.value = reduce(lambda a, b: a + b, [x.value for x in self.dice])
+
+
 def n_combinations(target: int, dice: int, sides: int) -> int:
     combinations: int = 0
 
@@ -46,42 +73,26 @@ def sum_prob(target: int, dice: int, sides: int = BASE_DICE_SIDES) -> float:
     return probability_sum
 
 
-class DieType(Flag):
-    BANE = auto()
-    NEUTRAL = auto()
-    BOON = auto()
-
-
-@dataclass
-class Die:
-    value: int
-    die_type: DieType
-
-
-@dataclass
-class Roll:
-    dice: list[Die]
-    value: int = field(init=False)
-
-    def __post_init__(self):
-        self.value = reduce(lambda a, b: a + b, [x.value for x in self.dice])
-
-
 class DiceRoller:
     @staticmethod
     def roll_dice(
-        count: int = 1, advantage: bool = False, disadvantage: bool = False
+        count: int = 1, advantage: DieAdvantage = DieAdvantage.NEUTRAL
     ) -> Roll:
         rolls: list[Die] = []
         num_dice: int = count
 
-        if advantage and disadvantage:
+        if advantage == DieAdvantage.ADVANTAGE | DieAdvantage.DISADVANTAGE:
             raise ValueError("Cannot roll with both advantage AND disadvantage")
 
-        if advantage:
-            num_dice += 1
-        elif disadvantage:
-            num_dice -= 1 if num_dice > 1 else 0
+        match advantage:
+            case DieAdvantage.DISADVANTAGE:
+                num_dice -= 1 if num_dice > 1 else 0
+            case DieAdvantage.ADVANTAGE:
+                num_dice += 1
+            case DieAdvantage.NEUTRAL:
+                pass
+            case _:
+                pass
 
         for _ in range(num_dice):
             roll: int = randint(1, BASE_DICE_SIDES)
