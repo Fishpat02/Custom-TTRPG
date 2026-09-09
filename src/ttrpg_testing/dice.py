@@ -41,6 +41,8 @@ def n_combinations(target: int, dice: int, sides: int) -> int:
 
     if (dice * sides) < target:
         return combinations
+    elif dice == 1:
+        combinations += 1
     elif dice == 2:
         for s in range(sides):
             side = s + 1
@@ -64,10 +66,19 @@ def n_combinations(target: int, dice: int, sides: int) -> int:
     return combinations
 
 
-def sum_prob(target: int, dice: int, sides: int = BASE_DICE_SIDES) -> float:
+def sum_prob_min(target: int, dice: int, sides: int = BASE_DICE_SIDES) -> float:
     probability_sum: float = 0.0
 
     for t in range(target, (dice * sides) + 1):
+        probability_sum += n_combinations(t, dice, sides) / float(sides) ** dice
+
+    return probability_sum
+
+
+def sum_prob_max(target: int, dice: int, sides: int = BASE_DICE_SIDES) -> float:
+    probability_sum: float = 0.0
+
+    for t in range(1, target + 1):
         probability_sum += n_combinations(t, dice, sides) / float(sides) ** dice
 
     return probability_sum
