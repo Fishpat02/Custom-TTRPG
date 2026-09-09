@@ -41,7 +41,7 @@ def main() -> None:
                 crit_probability = sum_prob_min(trial[1].dc + 10, trial_dice) or 0.0
                 fail_probability = (
                     sum_prob_max(trial[1].dc - 10, trial_dice) or 1.0
-                    if dc - 10 > 0
+                    if dc - 10 > 0 and trial_dice < dc - 10
                     else 0.0
                 )
 
