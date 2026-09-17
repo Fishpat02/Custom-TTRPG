@@ -24,35 +24,28 @@ def main() -> None:
         "Prof + Dis",
     ]
 
-    trials_frame = pd.DataFrame(
-        index=pd.MultiIndex.from_product(
-            [dcs, levels, roll_types],
-            names=["dc", "level", "roll_type"],
-        ),
-        data=range(96),
-    )
+    trials_data = []
 
-    print(trials_frame)
+    for dc in dcs:
+        for l, level in enumerate(levels):
+            prof_cap = l + 1
 
-    for _, dc in enumerate([10, 15, 20, 25]):
-        for prof_cap, level in enumerate([1, 5, 10, 15]):
-            num_dice = 0
-
-            trials = [
-                ("Flat", Trial(dc, False, DieAdvantage.NEUTRAL)),
-                ("Advantage", Trial(dc, False, DieAdvantage.ADVANTAGE)),
-                ("Disadvantage", Trial(dc, False, DieAdvantage.DISADVANTAGE)),
-                ("Proficient", Trial(dc, True, DieAdvantage.NEUTRAL)),
-                ("Prof + Adv", Trial(dc, True, DieAdvantage.ADVANTAGE)),
-                ("Prof + Dis", Trial(dc, True, DieAdvantage.DISADVANTAGE)),
-            ]
-
-            print(f"Probability to pass DC {dc} roll at level {level}:")
+            trials = zip(
+                roll_types,
+                [
+                    Trial(dc, False, DieAdvantage.NEUTRAL),
+                    Trial(dc, False, DieAdvantage.ADVANTAGE),
+                    Trial(dc, False, DieAdvantage.DISADVANTAGE),
+                    Trial(dc, True, DieAdvantage.NEUTRAL),
+                    Trial(dc, True, DieAdvantage.ADVANTAGE),
+                    Trial(dc, True, DieAdvantage.DISADVANTAGE),
+                ],
+            )
 
             for trial in trials:
-                trial_dice = num_dice
+                trial_dice = 1
                 if trial[1].proficient:
-                    trial_dice += 1 + prof_cap
+                    trial_dice += prof_cap
 
                 if trial[1].advantage == DieAdvantage.ADVANTAGE:
                     trial_dice += 1
@@ -68,15 +61,21 @@ def main() -> None:
                     else 0.0
                 )
 
-                print(
-                    f"{trial[0]:>15}: {probability:7.2%} [{crit_probability:7.2%} Critical Success] [{fail_probability:7.2%} Critical Failure] ({trial_dice} dice)"
-                )
+                trials_data += [
+                    [trial_dice, probability, crit_probability, fail_probability]
+                ]
 
-            print()
+    trials_frame = pd.DataFrame(
+        index=pd.MultiIndex.from_product(
+            [dcs, levels, roll_types],
+            names=["dc", "level", "roll_type"],
+        ),
+        columns=["dice", "probability", "crit_probability", "fail_probability"],
+        data=trials_data,
+    )
 
-        print(
-            "------------------------------------------------------------------------------------------\n"
-        )
+    for dc, df in trials_frame.groupby("dc"):
+        print(df)
 
 
 if __name__ == "__main__":
