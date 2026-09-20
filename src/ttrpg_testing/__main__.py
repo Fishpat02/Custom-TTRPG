@@ -42,21 +42,21 @@ def main() -> None:
                 ],
             )
 
-            for trial in trials:
+            for name, trial in trials:
                 trial_dice = 1
-                if trial[1].proficient:
+                if trial.proficient:
                     trial_dice += prof_cap
 
-                if trial[1].advantage == DieAdvantage.ADVANTAGE:
+                if trial.advantage == DieAdvantage.ADVANTAGE:
                     trial_dice += 1
 
-                if trial[1].advantage == DieAdvantage.DISADVANTAGE:
+                if trial.advantage == DieAdvantage.DISADVANTAGE:
                     trial_dice -= 1 if trial_dice > 1 else 0
 
-                probability = sum_prob_min(trial[1].dc, trial_dice)
-                crit_probability = sum_prob_min(trial[1].dc + 10, trial_dice) or 0.0
+                probability = sum_prob_min(trial.dc, trial_dice)
+                crit_probability = sum_prob_min(trial.dc + 10, trial_dice) or 0.0
                 fail_probability = (
-                    sum_prob_max(trial[1].dc - 10, trial_dice) or 1.0
+                    sum_prob_max(trial.dc - 10, trial_dice) or 1.0
                     if dc - 10 > 0 and trial_dice < dc - 10
                     else 0.0
                 )
