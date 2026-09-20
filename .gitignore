@@ -1,3 +1,7 @@
+# Editor configs
+.zed/
+.idea/
+
 # Python-generated files
 __pycache__/
 *.py[oc]
