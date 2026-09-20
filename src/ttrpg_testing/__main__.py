@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-import pandas as pd
+import polars as pl
 
 from .dice import DieAdvantage, sum_prob_max, sum_prob_min
 
@@ -62,19 +62,32 @@ def main() -> None:
                 )
 
                 trials_data += [
-                    [trial_dice, probability, crit_probability, fail_probability]
+                    [
+                        name,
+                        dc,
+                        level,
+                        trial_dice,
+                        probability,
+                        crit_probability,
+                        fail_probability,
+                    ]
                 ]
 
-    trials_frame = pd.DataFrame(
-        index=pd.MultiIndex.from_product(
-            [dcs, levels, roll_types],
-            names=["dc", "level", "roll_type"],
-        ),
-        columns=["dice", "probability", "crit_probability", "fail_probability"],
-        data=trials_data,
+    trials_frame = pl.DataFrame(
+        trials_data,
+        orient="row",
+        schema={
+            "roll_type": pl.String,
+            "dc": pl.Int32,
+            "level": pl.Int32,
+            "num_dice": pl.Int32,
+            "probability": pl.Float32,
+            "crit_probability": pl.Float32,
+            "fail_probability": pl.Float32,
+        },
     )
 
-    for dc, df in trials_frame.groupby("dc"):
+    for dc, df in trials_frame.group_by("dc", maintain_order=True):
         print(df)
 
 
